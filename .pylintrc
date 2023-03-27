@@ -1,6 +1,6 @@
 [MASTER]
 extension-pkg-whitelist=PyQt6,PyQt5
-
+ignore=ankidata,vendor
 
 [REPORTS]
 output-format=colorized

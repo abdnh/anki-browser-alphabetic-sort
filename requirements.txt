@@ -1,5 +1,1 @@
-aqt
-pylint
-mypy
-black
-isort
+pyuca==1.2

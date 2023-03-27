@@ -1,4 +1,4 @@
-.PHONY: all zip clean format mypy pylint fix
+.PHONY: all zip clean format mypy pylint fix vendor
 all: zip
 
 PACKAGE_NAME := browser_alphabetic_sort
@@ -19,6 +19,9 @@ mypy:
 
 pylint:
 	python -m pylint src
+
+vendor:
+	pip install -r requirements.txt -t src/vendor
 
 clean:
 	rm -f $(PACKAGE_NAME).ankiaddon

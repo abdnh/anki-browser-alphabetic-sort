@@ -8,8 +8,6 @@ https://forums.ankiweb.net/t/sort-field-in-alphabetic-order-problem/28687
 
 ## Technical details
 
-The add-on uses the `unicase` SQLite collation added by Anki, which does Unicode case-folding using the [unicase crate](https://crates.io/crates/unicase).
+By default, the add-on uses the [Unicode collation algorithm](https://en.wikipedia.org/wiki/Unicode_collation_algorithm) (via [pyuca](https://github.com/jtauber/pyuca)) for sorting.
 
-## TODO
-
-It appears that we can produce an order more similar to the expected alphabetic order for some languages using [Unicode collation algorithm](https://en.wikipedia.org/wiki/Unicode_collation_algorithm). Maybe we should explore this option and contribute to the discussion about a possible native option in Anki.
+The add-on also supports the `unicase` SQLite collation added by Anki, which does Unicode case-folding using the [unicase crate](https://crates.io/crates/unicase). You can enable it by changing the `COLLATION` enum variable in the code.

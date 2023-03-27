@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import sys
+from enum import Enum
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Sequence, cast
 
 from anki.cards import Card
@@ -7,15 +10,30 @@ from anki.hooks import addHook
 from anki.notes import Note, NoteId
 from aqt import appVersion, gui_hooks, mw
 
+ADDON_DIR = Path(__file__).parent
+sys.path.append(str(ADDON_DIR / "vendor"))
+
+# pylint: disable=wrong-import-position
+import pyuca
+import pyuca.collator
+
 ANKI_VERSION = tuple(int(p) for p in appVersion.split("."))
 
 if TYPE_CHECKING or ANKI_VERSION >= (2, 1, 45):
     # pylint: disable=ungrouped-imports
     from anki.collection import BrowserColumns
     from aqt.browser import CellRow, Column, ItemId, SearchContext
+    from aqt.browser.table import ItemId
+
+
+class Collation(Enum):
+    UNICASE = 1
+    UNICODE = 2
+
 
 COLUMN_KEY = "alphabeticSortField"
 COLUMN_LABEL = "Sort Field (Alphabetic)"
+COLLATION = Collation.UNICODE
 
 
 def add_browser_column(columns: dict[str, Column]) -> None:
@@ -33,9 +51,14 @@ def add_browser_column(columns: dict[str, Column]) -> None:
 
 def on_search(context: SearchContext) -> None:
     if isinstance(context.order, Column) and context.order.key == COLUMN_KEY:
-        context.order = "n.sfld collate unicase %s" % (
-            "desc" if context.reverse else "asc"
-        )
+        if COLLATION == Collation.UNICASE:
+            context.order = "n.sfld collate unicase %s" % (
+                "desc" if context.reverse else "asc"
+            )
+        else:
+            sort_col = mw.col.get_browser_column("noteFld")
+            sort_col.notes_mode_label = COLUMN_LABEL
+            context.order = sort_col
 
 
 def on_browser_did_fetch_row(
@@ -67,9 +90,37 @@ def on_browser_did_fetch_row(
         row.cells[idx].is_rtl = notetype["flds"][sortf]["rtl"]
 
 
-## Using the Advanced Browser add-on
+def unicode_sort(collator: pyuca.Collator, item_id: ItemId) -> tuple:
+    sfld = mw.col.db.scalar("select sfld from notes where id = ?", item_id)
+    if not sfld:
+        sfld = mw.col.db.scalar(
+            "select sfld from notes where id in (select nid from cards where id = ? limit 1)",
+            item_id,
+        )
+    if not sfld:
+        sfld = ""
+    sfld = str(sfld)
+    return collator.sort_key(sfld)
 
-advanced_browser_column = None
+
+def on_browser_did_search(context: SearchContext) -> None:
+    if not context.ids:
+        return
+    if COLLATION == Collation.UNICODE and (
+        (
+            isinstance(context.order, Column)
+            and context.order.notes_mode_label == COLUMN_LABEL
+        )
+        # Advanced Browser
+        or (
+            isinstance(context.order, str) and "n.sfld collate unicase" in context.order
+        )
+    ):
+        collator = pyuca.Collator()
+        context.ids = sorted(context.ids, key=lambda i: unicode_sort(collator, i))
+
+
+advanced_browser_column: Any = None
 
 
 def on_advanced_browser_loaded(advanced_browser: Any) -> None:
@@ -97,6 +148,7 @@ def setup_hooks() -> None:
     else:
         addHook("advBrowserLoaded", on_advanced_browser_loaded)
         addHook("advBrowserBuildContext", on_advanced_browser_build_context_menu)
+    gui_hooks.browser_did_search.append(on_browser_did_search)
 
 
 setup_hooks()
