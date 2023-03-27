@@ -3,4 +3,5 @@ __pycache__/
 *.ankiaddon
 src/meta.json
 ankidata/
+src/vendor/
 TODO.md
