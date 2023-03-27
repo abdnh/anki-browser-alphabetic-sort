@@ -1,0 +1,5 @@
+aqt
+pylint
+mypy
+black
+isort
