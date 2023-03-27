@@ -43,7 +43,7 @@ def add_browser_column(columns: dict[str, Column]) -> None:
         notes_mode_label=COLUMN_LABEL,
         sorting=BrowserColumns.SORTING_ASCENDING,
         uses_cell_font=True,
-        alignment=BrowserColumns.ALIGNMENT_CENTER,
+        alignment=BrowserColumns.ALIGNMENT_START,
         cards_mode_tooltip="",
         notes_mode_tooltip="",
     )
