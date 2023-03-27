@@ -1,4 +1,5 @@
 {
     "package": "browser_alphabetic_sort",
-    "name": "Alphabetic sort in the browser"
+    "name": "Alphabetic sort in the browser",
+    "min_point_version": 24
 }
