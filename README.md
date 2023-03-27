@@ -1,5 +1,7 @@
 This Anki add-on adds a new browser column that allows sorting by the sort field in a more alphabetic order than the default one for non-latin text.
 
+![Screenshot of the browser's column](images/column.png)
+
 See the following posts for details about the problem the add-on tries to solve:
 
 https://forums.ankiweb.net/t/sorting-should-produce-a-more-alphabetical-order/21621
