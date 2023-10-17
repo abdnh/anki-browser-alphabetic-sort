@@ -9,6 +9,7 @@ from anki.cards import Card
 from anki.hooks import addHook
 from anki.notes import Note, NoteId
 from aqt import appVersion, gui_hooks, mw
+from anki.utils import pointVersion
 
 ADDON_DIR = Path(__file__).parent
 sys.path.append(str(ADDON_DIR / "vendor"))
@@ -19,7 +20,7 @@ import pyuca.collator
 
 ANKI_VERSION = tuple(int(p) for p in appVersion.split("."))
 
-if TYPE_CHECKING or ANKI_VERSION >= (2, 1, 45):
+if TYPE_CHECKING or pointVersion() >= 45:
     # pylint: disable=ungrouped-imports
     from anki.collection import BrowserColumns
     from aqt.browser import CellRow, Column, ItemId, SearchContext
@@ -37,17 +38,29 @@ COLLATION = Collation.UNICODE
 
 
 def add_browser_column(columns: dict[str, Column]) -> None:
-    columns[COLUMN_KEY] = Column(
-        key=COLUMN_KEY,
-        cards_mode_label=COLUMN_LABEL,
-        notes_mode_label=COLUMN_LABEL,
-        sorting=BrowserColumns.SORTING_ASCENDING,
-        uses_cell_font=True,
-        alignment=BrowserColumns.ALIGNMENT_START,
-        cards_mode_tooltip="",
-        notes_mode_tooltip="",
-    )
-
+    if pointVersion() >= 231000:
+        columns[COLUMN_KEY] = Column(
+            key=COLUMN_KEY,
+            cards_mode_label=COLUMN_LABEL,
+            notes_mode_label=COLUMN_LABEL,
+            sorting_cards=BrowserColumns.SORTING_ASCENDING,
+            sorting_notes=BrowserColumns.SORTING_ASCENDING,
+            uses_cell_font=True,
+            alignment=BrowserColumns.ALIGNMENT_START,
+            cards_mode_tooltip="",
+            notes_mode_tooltip="",
+        )
+    else:
+        columns[COLUMN_KEY] = Column(
+            key=COLUMN_KEY,
+            cards_mode_label=COLUMN_LABEL,
+            notes_mode_label=COLUMN_LABEL,
+            sorting=BrowserColumns.SORTING_ASCENDING,
+            uses_cell_font=True,
+            alignment=BrowserColumns.ALIGNMENT_START,
+            cards_mode_tooltip="",
+            notes_mode_tooltip="",
+        )
 
 def on_search(context: SearchContext) -> None:
     if isinstance(context.order, Column) and context.order.key == COLUMN_KEY:
